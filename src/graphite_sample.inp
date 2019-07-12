@@ -1,0 +1,36 @@
+clear
+set verbose off
+
+# Set working dir
+string wd = "/home/ninja/repo/brain_lumen/common/gretl/monitoring"
+
+# Load the gretl script file
+include "@wd/graphite.inp" --force
+
+# Set up the GC struct (in gretl terms aka bundle) with default settings
+string use_case_name = "arturs"
+bundle GC = GraphiteConnector(use_case_name)
+
+# Example 1: Send the current timesampt as the metric
+string metric_name = "current_ts_new"
+sendTimestampNow(&GC, metric_name)
+
+# Example 2: Set some metric value with some date string
+string metric_name = "fifteen"
+sendWithDate(&GC, metric_name, "22", sprintf("%d", $now[1]))
+
+
+# Bulk load data
+string metric_name = "bulk"
+loop i=1..3 -q
+	# This is actually just the filling of the buffer     
+    sendWithDate(&GC, metric_name, sprintf("%d", $i^2), sprintf("%d", $now[1]), 1)		# use the current timestamp
+    if i<3
+        sleep(2)		# artifical delay
+    endif    
+endloop
+buffer = GC.buffer
+buffer							# this is the buffer stored
+sendBuffer(&GC)				# This is the actual sending of the bulk load
+
+
