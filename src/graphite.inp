@@ -1,10 +1,10 @@
 function bundle GretlGraphiteConnector ( const string use_case_name "Name of use case to build metric prefixes",
                                    const string identifier[null] "Identifier, e.g. team name",
-                                   const string GRAPHITE_HOST_DEV[null],
-                                   const string GRAPHITE_HOST_PRD[null],
-                                   const string INSTANCE_NAME_DEV[null],
-                                   const string INSTANCE_NAME_PRD[null],
-                                   const bool dev[0] "Run mode: 0=prd (default), 1=dev",
+                                   const string GRAPHITE_HOST_DEV[null] "Server URL for dev-runmode",
+                                   const string GRAPHITE_HOST_PRD[null] "Server URL for prd-runmode",
+                                   const string INSTANCE_NAME_DEV[null] "Instance name of the dev-runmode",
+                                   const string INSTANCE_NAME_PRD[null] "Instance name of the prd-runmode",
+                                   const bool dev[0] "Current run mode: 0=prd (default), 1=dev",
       const bool netcat[1] "Use netcat: 0=use socket (unsupported), 1=use netcat (default)")
 
 
