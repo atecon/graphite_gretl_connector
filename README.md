@@ -1,8 +1,8 @@
 # graphite_gretl_connector
 
-This gretl package sends metrics to the Graphite monitoring tool which collects, stores, and displays time-series data in real time.
+This ([gretl](http://gretl.sourceforge.net/)) package sends metrics to the Graphite monitoring tool which collects, stores, and displays time-series data in real time.
 
-The unix tool 'netcat' is called by gretl -- hence, this package is only working under linux or some other unix system **but not Windows**.
+The unix tool ([netcat](http://netcat.sourceforge.net/)) is called by gretl -- hence, this package is only working under linux or some other unix system **but not Windows**.
 
 Example: See the sample script "graphite_sample.inp"
 
@@ -10,15 +10,16 @@ Example: See the sample script "graphite_sample.inp"
 The package's main function is ```GretlGraphiteConnector()```. The function takes the following arguments:
 ```
 GretlGraphiteConnector (const string use_case_name "Name of use case to build metric prefixes",
-                                   const string identifier[null] "Identifier, e.g. team name",
-                                   const string GRAPHITE_HOST_DEV[null] "Server URL for dev-runmode",
-                                   const string GRAPHITE_HOST_PRD[null] "Server URL for prd-runmode",
-                                   const string INSTANCE_NAME_DEV[null] "Instance name of the dev-runmode",
-                                   const string INSTANCE_NAME_PRD[null] "Instance name of the prd-runmode",
-                                   const bool dev[0] "Current run mode: 0=prd (default), 1=dev",
+                        const string identifier[null] "Identifier, e.g. team name",
+                        const string GRAPHITE_HOST_DEV[null] "Server URL for dev-runmode",
+                        const string GRAPHITE_HOST_PRD[null] "Server URL for prd-runmode",
+                        const string INSTANCE_NAME_DEV[null] "Instance name of the dev-runmode",
+                        const string INSTANCE_NAME_PRD[null] "Instance name of the prd-runmode",
+                        const bool dev[0] "Current run mode: 0=prd (default), 1=dev",
       			const bool netcat[1] "Use netcat: 0=use socket (unsupported), 1=use netcat (default)")
 ```
-The user can also specify default values for $GRAPHITE_HOST_DEV$, $GRAPHITE_HOST_PRD$, $INSTANCE_NAME_DEV$ and $INSTANCE_NAME_PRD$ which are internally set by the ```defaultGC()``` function:
+
+The user can also specify default values for *GRAPHITE_HOST_DEV*, *GRAPHITE_HOST_PRD*, *INSTANCE_NAME_DEV* and *INSTANCE_NAME_PRD* which are internally set by the ```defaultGC()``` function:
 ```
 function bundle defaultGC (void)
 /* Set default property and connection value */
@@ -34,9 +35,7 @@ function bundle defaultGC (void)
 end function
 ```
 
-
 ## Sample script (see also "./src/graphite_sample.inp")
-
 ```
 clear
 set verbose off
@@ -76,5 +75,3 @@ buffer = GC.buffer
 buffer						# Buffer stored
 sendBuffer(&GC)				# Actual sending of the bulk-load
 ```
-TEX
-
