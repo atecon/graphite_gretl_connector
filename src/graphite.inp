@@ -1,40 +1,18 @@
-/*
-   This module provides functionality to send metrics to the team lumen
-   openshift monitoring service.
-
-   The usage is very similar to the Python-based package "graphite.py"
-   written by Heiner Hippke.
-
-   Author: Dr. Artur Tarassow
-*/
-
-function bundle GraphiteConnector ( const string use_case_name,
-                                   const string team_name[null],
+function bundle GretlGraphiteConnector ( const string use_case_name "Name of use case to build metric prefixes",
+                                   const string identifier[null] "Identifier, e.g. team name",
                                    const string GRAPHITE_HOST_DEV[null],
                                    const string GRAPHITE_HOST_PRD[null],
                                    const string INSTANCE_NAME_DEV[null],
                                    const string INSTANCE_NAME_PRD[null],
-                                   const bool dev[0],
-                                   const bool netcat[1])
+                                   const bool dev[0] "Run mode: 0=prd (default), 1=dev",
+      const bool netcat[1] "Use netcat: 0=use socket (unsupported), 1=use netcat (default)")
 
-    /*
-       Constructor of GraphiteConnector class.
 
-       ################################################################
-       Sample usage: See the sample script "graphite_sample.inp"
-       ################################################################
-       :param use_case_name: use case name which is used to build metric prefixes wit
-       :param team_name: team name which is used to build metric prefixes with
-       :param dev: use openshift dev project if true
-       :param netcat: use netcat connection if true, otherwise "socket" (not supported yet)
-    */
-
-    # Grab default values
-    bundle def = defaultGC()
+    bundle def = defaultGC()	# retrieve default values
 
     # Initialize the bundle
     bundle self = null
-    self.team_name = (exists(team_name)) ? team_name : def.team_name
+    self.identifier = (exists(identifier)) ? identifier : def.identifier
     self.use_case_name = (exists(use_case_name)) ? use_case_name : def.use_case_name
     self.dev = dev
     self.netcat = netcat
@@ -51,14 +29,12 @@ end function
 
 
 function bundle defaultGC (void)
-/* Set default property and connection value
-   :return: bundle
-    */
+/* Set default property and connection value */
     bundle self = null
-    string self.team_name = "lumen"
+    string self.identifier = "MyTeam"
     string self.use_case_name = ""
-    string self.GRAPHITE_HOST_DEV = "itbo-logistik-prognosen-dev.openshift-prd.ov.otto.de"
-    string self.GRAPHITE_HOST_PRD = "itbo-logistik-prognosen-prd.openshift-prd.ov.otto.de"
+    string self.GRAPHITE_HOST_DEV = "some_server-dev.openshift.foo.com"
+    string self.GRAPHITE_HOST_PRD = "some_server-prd.openshift.foo.com"
     string self.INSTANCE_NAME_DEV = "test"
     string self.INSTANCE_NAME_PRD = "prod"
 
@@ -69,7 +45,7 @@ end function
 function void initialSetup (bundle *self)
     /* Construct some further variables */
 
-    string self.metric_prefix = strstrip(sprintf("%s.%s", self.team_name, self.use_case_name))
+    string self.metric_prefix = strstrip(sprintf("%s.%s", self.identifier, self.use_case_name))
     string mode = (self.dev==0) ? "PRD" : "DEV"
     string self.metric_endpoint = sprintf("%s-monitoring-graphite-carbon-%s", self.INSTANCE_NAME_@mode, self.GRAPHITE_HOST_@mode)
     string self.http_request_addr = sprintf("http://%s-port-exposer-%s/simple_metric", self.INSTANCE_NAME_@mode, self.GRAPHITE_HOST_@mode)
@@ -78,28 +54,18 @@ function void initialSetup (bundle *self)
 end function
 
 
-function void sendTimestampNow (bundle *self, const string metric_name)
+function void sendTimestampNow (bundle *self, const string metric_name "name of the metric")
 /*
-   Sends a metric with the current unix timestamp as the metric_value
-   :param metric_name: name of the metric
-   :return: None
-    */
+   Sends a metric with the current unix timestamp as the metric_value */
     send(&self, metric_name, sprintf("%d000", $now[1]))		# '000' needed for proper date recognition by Graphite
 end function
 
 
 function void sendWithDate (bundle *self, const string metric_name,
-                            const string metric_value,
+                            const string metric_value "Value of the metric",
                             const string send_date "Date string: either Unix timestamp or use the format %Y-%m-%d",
                             const bool buffer[0] "Append metric to bulk load (default: No)")
-    /*
-       Sends a metric with a date specified.
-       :param metric_name: name of the metric
-       :param metric_value: value of the metric
-       :param send_date: date
-       :param buffer: do not send, but buffer for later bulk send
-       :return: None
-    */
+    /* Sends a metric with a date specified */
 
     if instring(send_date, "-")
         catch string unix_timestamp = sprintf("%d", strptime(send_date, "%Y-%m-%d"))
@@ -120,14 +86,11 @@ end function
 
 
 
-function void send (bundle *self, const string metric_name, string metric_value, string send_datetime[null] "Unix timestamp")
-/*
-   Sends a metric with a datetime specified.
-   :param metric_name: name of the metric
-   :param metric_value: value of the metric
-   :param send_datetime: datetime
-   :return: None
-    */
+function void send (bundle *self,
+                    const string metric_name "name of the metric",
+                    string metric_value "value of the metric",
+                    string send_datetime[null] "Unix timestamp")
+    /* Sends a metric with a datetime specified */
 
     send_datetime = (!exists(send_datetime)) ? sprintf("%d", $now[1]) : send_datetime
 
@@ -140,10 +103,8 @@ end function
 
 
 function void sendBuffer (bundle *self)
-/*
-   self.buffer is a k-dimension string array where each line has the
-   format "%s %s %s" (metric_name, metric_value, str(unix_timestamp))
-    */
+/* self.buffer is a k-dimension string array where each line has the
+   format "%s %s %s" (metric_name, metric_value, str(unix_timestamp)) */
 
     if self.netcat
         loop i=1..nelem(self.buffer) -q
@@ -151,15 +112,18 @@ function void sendBuffer (bundle *self)
             sendNetcat(&self, s[1], s[2], s[3])
         endloop
     else
-        funcerr "Error: Sending via 'socket' is not supported, yet."
+        funcerr "Sending via 'socket' is not supported, yet."
     endif
 
     strings self.buffer = array(0)    		# free self.buffer
 end function
 
 
-function void sendNetcat (bundle *self, const string metric_name, string metric_value, string send_datetime[null] "Unix timestamp")
-    /* Private function */
+function void sendNetcat (bundle *self,
+                          const string metric_name,
+                          string metric_value,
+                          string send_datetime[null] "Unix timestamp")
+    /* Actual sending through netcat executing a shell command */
 
     string metric = sprintf("%s.%s", self.metric_prefix, metric_name)
     string send_datetime = (!exists(send_datetime)) ? "`date +%s`" : send_datetime
@@ -167,17 +131,16 @@ function void sendNetcat (bundle *self, const string metric_name, string metric_
     string send_string = sprintf("echo \"%s %s %s\" | nc -q %d %s $(curl %s)", \
       metric, sprintf("%s", metric_value), send_datetime, self.nc_timeout, self.metric_endpoint,
       self.http_request_addr)
-    
+
     print send_string
 
-    catch ! @send_string				# execute shell-cmd; see 'help shell'
+    catch ! @send_string				# execute shell-cmd; For gretl settings see 'help shell'
     if !$error
         printf "Congrats, you've sent a measure to the Graphite server!\n"
     else
         printf "Error: Failed execution of shell-command\n"
         funcerr "Check whether gretl is allowed to execute shell-scripts."
     endif
-
 end function
 
 
