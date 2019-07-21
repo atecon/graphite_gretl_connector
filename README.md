@@ -16,7 +16,7 @@ GretlGraphiteConnector (const string use_case_name "Name of use case to build me
                         const bool dev[0] "Current run mode: 0=prd (default), 1=dev",
       			const bool netcat[1] "Use netcat: 0=use socket (unsupported), 1=use netcat (default)")
 ```
-
+## The *defaultGC()* function
 The user can also specify default values for *GRAPHITE_HOST_DEV*, *GRAPHITE_HOST_PRD*, *INSTANCE_NAME_DEV* and *INSTANCE_NAME_PRD* which are internally set by the ```defaultGC()``` function:
 ```
 function bundle defaultGC (void)
@@ -31,6 +31,21 @@ function bundle defaultGC (void)
 
     return self
 end function
+```
+
+## The *sendTimestampNow*
+This function simply sends the current Unix time-stamp to Graphite for a given metric name:
+```
+function void sendTimestampNow (bundle *self, const string metric_name "name of the metric")
+```
+
+## The *sendWithDate*
+This function allows you to set a metric name, a metric value and a date string. Optionally, the metric can be appended for bulk load:
+```
+function void sendWithDate (bundle *self, const string metric_name,
+                            const string metric_value "Value of the metric",
+                            const string send_date "Date string: either Unix timestamp or use the format %Y-%m-%d",
+                            const bool buffer[0] "Append metric to bulk load (default: No)")
 ```
 
 ## Sample script (see also "./src/graphite_sample.inp")
