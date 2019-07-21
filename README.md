@@ -4,7 +4,7 @@ This package sends metrics to the Graphite monitoring tool which collects, store
 
 Gretl calls through shell commands the unix tool ([netcat](http://netcat.sourceforge.net/)) -- hence, this package is only working under linux or some other unix system **but not Windows**.
 
-## Main function
+## The *GretlGraphiteConnector()* function
 The package's main function is ```GretlGraphiteConnector()```. The function takes the following arguments:
 ```
 GretlGraphiteConnector (const string use_case_name "Name of use case to build metric prefixes",
@@ -33,13 +33,13 @@ function bundle defaultGC (void)
 end function
 ```
 
-## The *sendTimestampNow*
+## The *sendTimestampNow()* function
 This function simply sends the current Unix time-stamp to Graphite for a given metric name:
 ```
 function void sendTimestampNow (bundle *self, const string metric_name "name of the metric")
 ```
 
-## The *sendWithDate*
+## The *sendWithDate()* function
 This function allows you to set a metric name, a metric value and a date string. Optionally, the metric can be appended for bulk load:
 ```
 function void sendWithDate (bundle *self, const string metric_name,
