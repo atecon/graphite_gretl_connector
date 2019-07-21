@@ -6,9 +6,38 @@ The unix tool 'netcat' is called by gretl -- hence, this package is only working
 
 Example: See the sample script "graphite_sample.inp"
 
+## Main function
+The package's main function is ```GretlGraphiteConnector()```. The function takes the following arguments:
+```
+GretlGraphiteConnector (const string use_case_name "Name of use case to build metric prefixes",
+                                   const string identifier[null] "Identifier, e.g. team name",
+                                   const string GRAPHITE_HOST_DEV[null] "Server URL for dev-runmode",
+                                   const string GRAPHITE_HOST_PRD[null] "Server URL for prd-runmode",
+                                   const string INSTANCE_NAME_DEV[null] "Instance name of the dev-runmode",
+                                   const string INSTANCE_NAME_PRD[null] "Instance name of the prd-runmode",
+                                   const bool dev[0] "Current run mode: 0=prd (default), 1=dev",
+      			const bool netcat[1] "Use netcat: 0=use socket (unsupported), 1=use netcat (default)")
+```
+The user can also specify default values for $GRAPHITE_HOST_DEV$, $GRAPHITE_HOST_PRD$, $INSTANCE_NAME_DEV$ and $INSTANCE_NAME_PRD$ which are internally set by the ```defaultGC()``` function:
+```
+function bundle defaultGC (void)
+/* Set default property and connection value */
+    bundle self = null
+    string self.identifier = "MyTeam"
+    string self.use_case_name = ""
+    string self.GRAPHITE_HOST_DEV = "some_server-dev.openshift.foo.com"
+    string self.GRAPHITE_HOST_PRD = "some_server-prd.openshift.foo.com"
+    string self.INSTANCE_NAME_DEV = "test"
+    string self.INSTANCE_NAME_PRD = "prod"
+
+    return self
+end function
+```
+
+
 ## Sample script (see also "./src/graphite_sample.inp")
 
-`code'
+```
 clear
 set verbose off
 
@@ -46,12 +75,6 @@ endloop
 buffer = GC.buffer
 buffer						# Buffer stored
 sendBuffer(&GC)				# Actual sending of the bulk-load
-`
+```
 TEX
-
-
-
-
-
-
 
