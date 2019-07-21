@@ -1,10 +1,8 @@
-# graphite_gretl_connector
+# GretlGraphiteConnector
 
-This ([gretl](http://gretl.sourceforge.net/)) package sends metrics to the Graphite monitoring tool which collects, stores, and displays time-series data in real time.
+This package sends metrics to the Graphite monitoring tool which collects, stores, and displays time-series data in real time. The package is written for the open-source statistics and econometrics software ([gretl](http://gretl.sourceforge.net/)).
 
-The unix tool ([netcat](http://netcat.sourceforge.net/)) is called by gretl -- hence, this package is only working under linux or some other unix system **but not Windows**.
-
-Example: See the sample script "graphite_sample.inp"
+Gretl calls through shell commands the unix tool ([netcat](http://netcat.sourceforge.net/)) -- hence, this package is only working under linux or some other unix system **but not Windows**.
 
 ## Main function
 The package's main function is ```GretlGraphiteConnector()```. The function takes the following arguments:
